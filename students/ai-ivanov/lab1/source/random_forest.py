@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
+from joblib import Parallel, delayed
 
 
 class RandomForestClassifier:
@@ -47,8 +48,8 @@ class RandomForestClassifier:
         if self.max_features is None:
             self.max_features = int(np.sqrt(X.shape[1]))
 
-        # Создаем и обучаем деревья
-        for i in range(self.n_estimators):
+        # Функция для создания и обучения одного дерева
+        def _fit_single_tree(i, X, y, n_samples):
             # Bootstrap выборка
             sample_size = int(n_samples * self.bootstrap_size)
             indices = rng.randint(0, n_samples, sample_size)
@@ -58,12 +59,15 @@ class RandomForestClassifier:
             # Создаем и обучаем дерево
             tree = DecisionTreeClassifier(
                 max_features=self.max_features,
-                random_state=self.random_state + i
-                if self.random_state is not None
-                else None,
+                random_state=self.random_state + i if self.random_state is not None else None,
             )
-            tree.fit(X_bootstrap, y_bootstrap)
-            self.trees.append(tree)
+            return tree.fit(X_bootstrap, y_bootstrap)
+
+        # Параллельное обучение деревьев
+        self.trees = Parallel(n_jobs=-1)(
+            delayed(_fit_single_tree)(i, X, y, n_samples)
+            for i in range(self.n_estimators)
+        )
 
         return self
 
