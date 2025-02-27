@@ -33,7 +33,7 @@ class BaggingClassifierManual:
             tree = DecisionTreeClassifier(random_state=seed)
             tree.fit(X_boot, y_boot)
 
-            # проверка алгоритма
+            # Проверка алгоритма
             X_test, y_test = X[~indices][:, features], y[~indices]
             if accuracy_score(tree.predict(X_test), y_test) > 0.6:
                 self.estimators_.append([tree, features])
