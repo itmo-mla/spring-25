@@ -22,10 +22,17 @@ class BaggingClassifier:
             self.models.append(model)
 
     def predict(self, X):
-        pred = np.zeros(len(X))
-        for model in self.models:
-            pred += model.predict(X)
-        return np.round(pred / self.n_estimators)
+        # Получаем предсказания от каждой модели
+        predictions = np.array([model.predict(X) for model in self.models])
+
+        final_predictions = np.apply_along_axis(
+            lambda x: np.bincount(x).argmax(),
+            axis=0,
+            arr=predictions,
+        )
+
+        return final_predictions
+
 
     def get_params(self, *args, **kwargs):
         return dict(
