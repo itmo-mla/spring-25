@@ -36,7 +36,7 @@
 ```
 MY BAGGING: 1xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.008
-Кросс-валидация: 0.127
+Кросс-валидация: 0.601
 
 SKLEARN BAGGING: 1xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.012
@@ -47,7 +47,7 @@ SKLEARN BAGGING: 1xDecisionTreeClassifier(max_depth=1, random_state=42)
 ```
 MY BAGGING: 5xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.014
-Кросс-валидация: 0.127
+Кросс-валидация: 0.890
 
 SKLEARN BAGGING: 5xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.023
@@ -58,7 +58,7 @@ SKLEARN BAGGING: 5xDecisionTreeClassifier(max_depth=1, random_state=42)
 ```
 MY BAGGING: 10xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.019
-Кросс-валидация: 0.127
+Кросс-валидация: 0.930
 
 SKLEARN BAGGING: 10xDecisionTreeClassifier(max_depth=1, random_state=42)
 Время работы: 0.033
@@ -101,6 +101,6 @@ SKLEARN BAGGING: 10xDecisionTreeClassifier(max_depth=2, random_state=42)
 
 ## Выводы
 
-Реализованный классификатор на основе бэггинга работает в два раза быстрее, чем реализация Sklearn, однако проигрывает в качестве в первых трех экспериментах, где в качестве базовой модели было выбрано дерево принятия решений с глубиной 1. 
+Реализованный классификатор на основе бэггинга работает в два раза быстрее, чем реализация Sklearn, однако немного проигрывает в качестве в первых трех экспериментах, где в качестве базовой модели было выбрано дерево принятия решений с глубиной 1. 
 
 Бэггинг является простым методом ассемблирования, однако дает неплохие результаты (это можно заметить по разнице точности в 1x, 5x и 10x) – чем больше моделей, тем выше точность.
