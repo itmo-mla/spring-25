@@ -105,7 +105,6 @@ Random Forest позволяет оценить важность признак�
 $$ I_j = \frac{1}{N} \sum_{i=1}^N (L(y_i, f(x_i^{(j)})) - L(y_i, f(x_i))) $$
 где $x_i^{(j)}$ - наблюдение с перемешанным j-м признаком
 
-
 ### Реализация Random Forest Classifier
 
 ```python
@@ -116,6 +115,7 @@ class RandomForestClassifier:
         max_features: int | None = None,
         random_state: int | None = None,
         bootstrap_size: float = 1.0,
+        min_oob_score: float = 0.5,
     ):
         """
         Parameters:
@@ -129,12 +129,16 @@ class RandomForestClassifier:
             Состояние генератора случайных чисел
         bootstrap_size : float, default=1.0
             Размер бутстрэп-выборки как доля от исходного набора данных
+        min_oob_score : float, default=0.5
+            Минимальный порог качества на OOB выборке для включения дерева в ансамбль
         """
         self.n_estimators = n_estimators
         self.max_features = max_features
         self.random_state = random_state
         self.bootstrap_size = bootstrap_size
+        self.min_oob_score = min_oob_score
         self.trees: list[DecisionTreeClassifier] = []
+        self.oob_indices: list[np.ndarray] = []
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "RandomForestClassifier":
         """
@@ -158,22 +162,42 @@ class RandomForestClassifier:
         def _fit_single_tree(i, X, y, n_samples):
             # Bootstrap выборка
             sample_size = int(n_samples * self.bootstrap_size)
-            indices = rng.randint(0, n_samples, sample_size)
-            X_bootstrap = X[indices]
-            y_bootstrap = y[indices]
+            bootstrap_indices = rng.randint(0, n_samples, sample_size)
+            X_bootstrap = X[bootstrap_indices]
+            y_bootstrap = y[bootstrap_indices]
+
+            # Получаем OOB индексы (те, что не попали в бутстрэп)
+            oob_indices = np.setdiff1d(np.arange(n_samples), np.unique(bootstrap_indices))
 
             # Создаем и обучаем дерево
             tree = DecisionTreeClassifier(
                 max_features=self.max_features,
                 random_state=self.random_state + i if self.random_state is not None else None,
             )
-            return tree.fit(X_bootstrap, y_bootstrap)
+            tree = tree.fit(X_bootstrap, y_bootstrap)
+
+            # Оцениваем качество на OOB выборке
+            if len(oob_indices) > 0:
+                oob_predictions = tree.predict(X[oob_indices])
+                oob_score = np.mean(oob_predictions == y[oob_indices])
+            else:
+                oob_score = 0.0
+
+            return tree, oob_indices, oob_score
 
         # Параллельное обучение деревьев
-        self.trees = Parallel(n_jobs=-1)(
+        results = Parallel(n_jobs=-1)(
             delayed(_fit_single_tree)(i, X, y, n_samples)
             for i in range(self.n_estimators)
         )
+
+        # Фильтруем деревья по качеству на OOB выборке
+        self.trees = []
+        self.oob_indices = []
+        for tree, oob_indices, oob_score in results:
+            if oob_score >= self.min_oob_score:
+                self.trees.append(tree)
+                self.oob_indices.append(oob_indices)
 
         return self
 
@@ -191,6 +215,9 @@ class RandomForestClassifier:
         y : array-like of shape (n_samples,)
             Предсказанные метки классов
         """
+        if not self.trees:
+            raise ValueError("No trees in the forest. Try lowering min_oob_score threshold.")
+
         # Получаем предсказания от всех деревьев
         predictions = np.array([tree.predict(X) for tree in self.trees])
 
