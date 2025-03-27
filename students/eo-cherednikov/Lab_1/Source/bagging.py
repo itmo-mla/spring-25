@@ -36,7 +36,7 @@ class BaggingClassifier:
         return estimator, accuracy_score(estimator.predict(X_test), y_test)
 
     def train_by_treshold(self, X, y):
-        for _ in range (5):
+        for _ in range(5):
             model, accuracy = self.train_estimator(X, y)
             if accuracy > self.accuracy_threshold:
                 return model
