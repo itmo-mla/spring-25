@@ -8,16 +8,16 @@
 по итогам экспериментов были получены следующие результаты:
 
 1. Датасет Iris
- - CustomBagging: время = 1.0764 с, accuracy(cv) = 0.9067
- - SklearnBagging: время = 1.1806 с, accuracy(cv) = 0.9533
+ - CustomBagging: время = 1.2415 с, accuracy(cv) = 0.9267
+ - SklearnBagging: время = 1.4072 с, accuracy(cv) = 0.9533
 
 2. Датасет Wine
- - CustomBagging: время = 0.0113 с, accuracy(cv) = 0.9157
- - SklearnBagging: время = 1.1689 с, accuracy(cv) = 0.9386
+ - CustomBagging: время = 0.0215 с, accuracy(cv) = 0.8705
+ - SklearnBagging: время = 1.4176 с, accuracy(cv) = 0.9386
 
 На обоих наборах данных SklearnBagging показывает несколько более 
-высокую точность - (0.95 vs 0.90 на Iris, 0.93 vs 0.91 на Wine).
+высокую точность - (0.95 vs 0.93 на Iris, 0.94 vs 0.87 на Wine).
 
-На Iris время работы у обоих решений сопоставимое (около 1.07–1.18 с).
-На Wine эталонный метод обучается дольше (1.1689 с против 0.0113 с у CustomBagging).
+На Iris время работы у обоих решений сопоставимое (около 1.24–1.4 с).
+На Wine эталонный метод обучается дольше (1.42 с против 0.02 с у CustomBagging).
 

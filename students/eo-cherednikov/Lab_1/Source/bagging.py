@@ -18,7 +18,6 @@ class BaggingClassifier:
         self.estimators = []
 
     def fit(self, X, y):
-        np.random.seed(self.random_state)
         self.estimators = list(Parallel(n_jobs=self.n_jobs)(
             delayed(self.train_by_treshold)(X, y)
             for _ in range(self.n_estimators)
@@ -36,11 +35,11 @@ class BaggingClassifier:
         return estimator, accuracy_score(estimator.predict(X_test), y_test)
 
     def train_by_treshold(self, X, y):
+        model, accuracy = self.train_estimator(X, y)
         for _ in range(5):
-            model, accuracy = self.train_estimator(X, y)
-            if accuracy > self.accuracy_threshold:
-                return model
-        raise TimeoutError
+            if accuracy < self.accuracy_threshold:
+                model, accuracy = self.train_estimator(X, y)
+        return model
 
     def predict(self, X):
         predictions = np.array([model.predict(X) for model in self.estimators])
