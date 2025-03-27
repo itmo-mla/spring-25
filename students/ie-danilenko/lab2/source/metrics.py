@@ -21,14 +21,11 @@ if __name__ == "__main__":
     times = []
     for model in models:
         start_time = time()
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        times.append(time() - start_time)
         metrics.append(fold.cros_valid(model, X_test, y_test, mean_squared_error))
+        times.append(time() - start_time)
 
     print(f"My time: {times[0]}")
     print(f"My metrics: {np.mean(metrics[0])}\n\n")
-
 
     print(f"SKBoost time: {times[1]}")
     print(f"SKBoost metrics: {np.mean(metrics[1])}")
