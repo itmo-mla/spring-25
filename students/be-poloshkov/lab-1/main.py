@@ -37,7 +37,8 @@ def main():
                 print(f'{label.upper()}: {estimator}')
                 print(f'Количество классификаторов: {n_estimators}')
                 print(f'Время работы: {time_spent:.3f}')
-                print(f'Кросс-валидация: {scores.mean():.3f}')
+                print(f'Доля правильных ответов (кросс-валидация): {scores.mean():.3f}')
+                print()
 
 
 if __name__ == '__main__':
