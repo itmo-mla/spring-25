@@ -21,11 +21,11 @@ if __name__ == "__main__":
     times = []
     for model in models:
         start_time = time()
-        metrics.append(fold.cros_valid(model, X_test, y_test, mean_squared_error))
+        metrics.append(fold.cros_valid(model, X_train, y_train, mean_squared_error))
         times.append(time() - start_time)
 
     print(f"My time: {times[0]}")
-    print(f"My metrics: {np.mean(metrics[0])}\n\n")
+    print(f"My metrics: {np.mean(metrics[0])}\n")
 
     print(f"SKBoost time: {times[1]}")
     print(f"SKBoost metrics: {np.mean(metrics[1])}")

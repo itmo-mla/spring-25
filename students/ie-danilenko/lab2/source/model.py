@@ -73,10 +73,13 @@ if __name__ == "__main__":
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
     from read import read_data
+    from time import time
 
     X, y = read_data("data/possum.csv")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = GradientBoostingRegressor(n_estimators=100, max_depth=16, learning_rate=0.005)
     fold = KFold(n_splits=5, shuffle=True, random_state=42)
-    scores = fold.cros_valid(model, X_test, y_test, mean_squared_error)
+    start_time = time()
+    scores = fold.cros_valid(model, X_train, y_train, mean_squared_error)
+    print(f"Train time: {time() - start_time}")
     print("Cross-validation MSE:", np.mean(scores))
