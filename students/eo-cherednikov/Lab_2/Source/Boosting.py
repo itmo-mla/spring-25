@@ -21,14 +21,14 @@ class CustomGradientBoosting:
     def fit(self, X, y):
         if self.task_type == TaskType.CLASSIFICATION:
             self.f0 = np.log(np.mean(y) / (1 - np.mean(y)))
-            residuals = y - expit(self.f0)
-
+            current_logit = np.full_like(y, self.f0, dtype=float)
             for _ in range(self.n_estimators):
-                model = DecisionTreeClassifier(max_depth=self.max_depth)
-                model.fit(X, residuals > 0)
-                predictions = model.predict(X)
-                residuals -= self.learning_rate * predictions
-                self.models.append(model)
+                p = expit(current_logit)
+                residuals = y - p
+                tree = DecisionTreeRegressor(max_depth=self.max_depth)
+                tree.fit(X, residuals)
+                current_logit += self.learning_rate * tree.predict(X)
+                self.models.append(tree)
 
         elif self.task_type == TaskType.REGRESSION:
             self.f0 = np.mean(y)
@@ -50,7 +50,8 @@ class CustomGradientBoosting:
             logit_predictions = np.full(X.shape[0], self.f0)
             for model in self.models:
                 logit_predictions += self.learning_rate * model.predict(X)
-            return (expit(logit_predictions) > 0.5).astype(int)
+            probs = expit(logit_predictions)
+            return (probs > 0.5).astype(int)
 
         elif self.task_type == TaskType.REGRESSION:
             preds = np.full(X.shape[0], self.f0)
