@@ -5,13 +5,13 @@ import numpy as np
 import pandas as pd
 from typing import Union
 from sklearn.model_selection import train_test_split
-#from sklearn.model_selection import cross_val_score
 from matplotlib import pyplot as plt 
 import os 
 from scripts import cross_val_score_mine, data_breast_cancer_preprocessing, ploter, my_grid_search, data_housing
 import itertools
 import warnings
-import time  # Добавляем импорт для измерения времени
+import time 
+from joblib import Parallel, delayed
 warnings.filterwarnings("ignore")
 
 
@@ -27,7 +27,9 @@ class RandomForest:
                  sample_size: float,
                  method: Union[DecisionTreeClassifier, DecisionTreeRegressor] = DecisionTreeClassifier,
                  oob_score: bool = False,
-                 max_features: float = None):
+                 max_features: float = None,
+                 min_oob_score: float = 0.0,
+                 n_jobs: int = -1):
         
         self.n_estimators = n_estimators
         self.max_depth = max_depth
@@ -37,12 +39,35 @@ class RandomForest:
         self.method = method
         self.oob_score_param = oob_score
         self.max_features = max_features
+        self.min_oob_score = min_oob_score
+        self.n_jobs = n_jobs
     
     def bootstrap_sample(self, X):
         n_samples = X.shape[0]
         idx_for_sample = np.random.choice(n_samples, size=int(n_samples * self.sample_size), replace=True)
         oob_idx = np.setdiff1d(np.arange(n_samples), idx_for_sample)
         return idx_for_sample, oob_idx
+    
+    def _fit_single_tree(self, X, y, seed=None):
+        np.random.seed(seed)
+        idx_for_sample, oob_idx = self.bootstrap_sample(X)
+        tree = self.method(max_depth=self.max_depth,
+                       min_samples_split=self.min_samples_split,
+                       min_samples_leaf=self.min_samples_leaf,
+                       max_features=self.max_features,
+                       ccp_alpha=0.0)
+        
+        tree.fit(self.X_train[idx_for_sample], self.y_train[idx_for_sample])
+        
+        oob_score = 0.0
+        if len(oob_idx) > 0:
+            y_pred = tree.predict(self.X_train[oob_idx])
+            if self.method == DecisionTreeClassifier:
+                oob_score = accuracy_score(self.y_train[oob_idx], y_pred)
+            else:
+                oob_score = r2_score(self.y_train[oob_idx], y_pred)
+        
+        return tree, oob_idx, oob_score
     
     def fit(self, X, y):
         self.trees = []
@@ -57,26 +82,29 @@ class RandomForest:
             elif self.method == DecisionTreeRegressor:
                 self.max_features = (n_features // 3) / n_features
         
-            
-        for _ in range(self.n_estimators):
-            idx_for_sample, oob_idx = self.bootstrap_sample(X)
-            tree = self.method(max_depth=self.max_depth,
-                               min_samples_split=self.min_samples_split,
-                               min_samples_leaf=self.min_samples_leaf,
-                               max_features=self.max_features,
-                               ccp_alpha=0.0)
-            
-            tree.fit(self.X_train[idx_for_sample], self.y_train[idx_for_sample])
-            self.trees.append(tree)
-            self.oob_idx.append(oob_idx)
+        results = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._fit_single_tree)(X, y, seed=i)
+            for i in range(self.n_estimators)
+        )
         
+
+        for tree, oob_idx, oob_score in results:
+            if oob_score >= self.min_oob_score:
+                self.trees.append(tree)
+                self.oob_idx.append(oob_idx)
+        
+        if not self.trees and results:
+            best_idx = np.argmax([score for _, _, score in results])
+            self.trees.append(results[best_idx][0])
+            self.oob_idx.append(results[best_idx][1])
+            
         if self.oob_score_param:
             self.oob_score_ = self.compute_oob_score()
             
     def compute_oob_score(self):
         n_samples = self.X_train.shape[0]
-        predictions = np.zeros((n_samples, self.n_estimators))
-        oob_mask = np.zeros((n_samples, self.n_estimators), dtype=bool)
+        predictions = np.zeros((n_samples, len(self.trees)))
+        oob_mask = np.zeros((n_samples, len(self.trees)), dtype=bool)
         for i, (tree, oob_indices) in enumerate(zip(self.trees, self.oob_idx)):
             if len(oob_indices) > 0:
                 predictions[oob_indices, i] = tree.predict(self.X_train[oob_indices])
@@ -113,11 +141,17 @@ class RandomForestRegressor_(RandomForest):
                  min_samples_leaf: int,
                  sample_size: float,
                  oob_score: bool = False,
-                 max_features: float = None):
+                 max_features: float = None,
+                 min_oob_score: float = 0.0,
+                 n_jobs: int = -1):
         super().__init__(n_estimators, max_depth, min_samples_split, min_samples_leaf, sample_size,
-                        method=DecisionTreeRegressor, oob_score=oob_score, max_features=max_features)
+                        method=DecisionTreeRegressor, oob_score=oob_score, max_features=max_features,
+                        min_oob_score=min_oob_score, n_jobs=n_jobs)
     
     def predict(self, X):
+        if not self.trees:
+            raise ValueError("Нет деревьев в лесу. Попробуйте уменьшить порог min_oob_score.")
+            
         tree_preds = []
         for i, tree in enumerate(self.trees):
             X_subset = np.array(X)
@@ -139,11 +173,17 @@ class RandomForestClassifier_(RandomForest):
                  min_samples_leaf: int,
                  sample_size: float,
                  oob_score: bool = False,
-                 max_features: float = None):
+                 max_features: float = None,
+                 min_oob_score: float = 0.0,
+                 n_jobs: int = -1):
         super().__init__(n_estimators, max_depth, min_samples_split, min_samples_leaf, sample_size, 
-                         method=DecisionTreeClassifier, oob_score=oob_score, max_features=max_features)
+                         method=DecisionTreeClassifier, oob_score=oob_score, max_features=max_features,
+                         min_oob_score=min_oob_score, n_jobs=n_jobs)
     
     def predict(self, X):
+        if not self.trees:
+            raise ValueError("Нет деревьев в лесу. Попробуйте уменьшить порог min_oob_score.")
+            
         tree_preds = []
         for i, tree in enumerate(self.trees):
             X_subset = np.array(X)
@@ -161,8 +201,6 @@ class RandomForestClassifier_(RandomForest):
 if __name__ == "__main__":
     X, y = data_breast_cancer_preprocessing()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Обучение модели с OOB оценкой
     clf_oob = RandomForestClassifier_(n_estimators=10, max_depth=10, min_samples_split=2, 
                                      min_samples_leaf=1, sample_size=0.6, oob_score=True)
 
@@ -170,7 +208,7 @@ if __name__ == "__main__":
     rf_sklearn = RandomForestClassifier(n_estimators=10, max_depth=10, min_samples_split=2, 
                                        min_samples_leaf=1, oob_score=True)
     
-    # Измерение времени обучения
+
     start_time = time.time()
     clf_oob.fit(X, y)
     my_fit_time = time.time() - start_time
@@ -185,6 +223,15 @@ if __name__ == "__main__":
     print(f"OOB Score: {clf_oob.oob_score_}")   
     print("________________________________________________________")
 
+
+    clf_oob_threshold = RandomForestClassifier_(n_estimators=20, max_depth=10, min_samples_split=2, 
+                                     min_samples_leaf=1, sample_size=0.6, oob_score=True, min_oob_score=0.7)
+    clf_oob_threshold.fit(X_train, y_train)
+    print(f"Количество деревьев после фильтрации по порогу min_oob_score=0.7: {len(clf_oob_threshold.trees)}")
+    print(f"OOB Score с порогом: {clf_oob_threshold.oob_score_}")
+    print(f"Точность на тестовой выборке: {clf_oob_threshold.score(X_test, y_test)}")
+    print("________________________________________________________")
+
     best_n_estimator, best_max_features, best_sample_size, best_score = my_grid_search(RandomForestClassifier_, X, y)
     clf_oob = RandomForestClassifier_(n_estimators=best_n_estimator,
                                       max_depth=10,
@@ -194,7 +241,6 @@ if __name__ == "__main__":
                                       max_features=best_max_features, 
                                       oob_score=True)
     
-    # Добавляем вызов метода fit перед использованием predict
     clf_oob.fit(X_train, y_train)
         
     rf_sklearn = RandomForestClassifier(n_estimators=best_n_estimator,
@@ -207,7 +253,7 @@ if __name__ == "__main__":
                                         oob_score=True)
     rf_sklearn.fit(X_train, y_train)
     
-    # Измерение времени предсказания
+
     start_time = time.time()
     clf_oob.predict(X_test)
     my_predict_time = time.time() - start_time
@@ -247,7 +293,7 @@ if __name__ == "__main__":
                                       max_features=best_max_features, 
                                       oob_score=True)
     
-    # Измерение времени обучения регрессора
+
     start_time = time.time()
     clf_oob.fit(X_train, y_train)
     my_fit_time_reg = time.time() - start_time
@@ -267,7 +313,7 @@ if __name__ == "__main__":
     
     print(f"Время обучения регрессора (моя реализация): {my_fit_time_reg:.4f} сек")
     print(f"Время обучения регрессора (sklearn): {sklearn_fit_time_reg:.4f} сек")
-    # Измерение времени предсказания регрессора
+
     start_time = time.time()
     clf_oob.predict(X_test)
     my_predict_time_reg = time.time() - start_time
@@ -284,7 +330,7 @@ if __name__ == "__main__":
     print(f"Sklearn MAE: {mean_absolute_error(y_test, rf_sklearn.predict(X_test))}")
     print("________________________________________________________")
     
-    # Добавляем кросс-валидацию для регрессора
+
     scores_mine_reg = cross_val_score_mine(clf_oob, X, y, cv=5)
     scores_sklearn_reg = cross_val_score_mine(rf_sklearn, X, y, cv=5)
 

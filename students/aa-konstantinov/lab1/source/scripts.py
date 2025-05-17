@@ -13,7 +13,7 @@ def cross_val_score_mine(clf, X, y, cv=5):
     scores = []
     for i in range(cv):
         test_idx = fold_indices[i]
-        train_idx = np.setdiff1d(indices, test_idx) #Разности множеств
+        train_idx = np.setdiff1d(indices, test_idx)
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx] 
         clf.fit(X_train, y_train)
@@ -63,7 +63,6 @@ def my_grid_search(clf, X, y):
 
     
 def ploter(scores_sklearn, scores_mine, clf_oob, sklearn_oob_score):
-    # Добавляем на график
     plt.figure(figsize=(10, 5))
     plt.plot(scores_sklearn, label="Random Forest sklearn", color="blue")
     plt.plot(scores_mine, label="Random Forest mine", color="red")
