@@ -43,16 +43,14 @@ class LDA:
         for _ in range(self.max_iter):
             for i in range(n_samples):
                 row = X[i].toarray()[0] if hasattr(X, "toarray") else X[i]
-                word_ids = []
-                counts = []
+                
+                word_id_tokens = []
                 for j in range(n_features):
-                    cnt = int(row[j])
-                    if cnt > 0:
-                        word_ids.extend([j] * cnt)
-                        counts.append((j, cnt))
+                    count = int(row[j])
+                    word_id_tokens.extend([j] * count)
 
-                for idx, (word_id, _) in enumerate(counts):
-                    old_topic = self.assignments_[i][idx]
+                for token_idx, word_id in enumerate(word_id_tokens):
+                    old_topic = self.assignments_[i][token_idx]
 
                     # Уменьшаем счетчики
                     self.doc_topic_counts_[i, old_topic] -= 1
@@ -66,7 +64,8 @@ class LDA:
                     )
 
                     # Защита от нулей и NaN
-                    p_topic = np.clip(p_topic, a_min=1e-12, a_max=None)
+                    p_topic /= p_topic.sum()
+                    p_topic = np.maximum(p_topic, 1e-9) 
                     p_topic /= p_topic.sum()
 
                     new_topic = np.random.choice(self.n_components, p=p_topic)
@@ -74,7 +73,7 @@ class LDA:
                     # Обновляем
                     self.doc_topic_counts_[i, new_topic] += 1
                     self.topic_word_counts_[new_topic, word_id] += 1
-                    self.assignments_[i][idx] = new_topic
+                    self.assignments_[i][token_idx] = new_topic
 
         # Нормализуем компоненты
         self.components_ = self.topic_word_counts_.copy()
@@ -96,9 +95,9 @@ class LDA:
 if __name__ == "__main__":
     from read import read_texts
 
-    documents = read_texts('data/cleaned_texts.csv')
+    documents = read_texts('/Users/ilyadanilenko/Documents/GitHub/spring-25/students/ie-danilenko/lab4/data/cleaned_texts.csv')
     vectorizer = CountVectorizer(max_features=5000, stop_words='english')
-    X = vectorizer.fit_transform(documents)
+    X = vectorizer.fit_transform()
 
     lda = LDA(n_components=3, max_iter=50, random_state=42)
     lda.fit(X)
