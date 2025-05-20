@@ -21,8 +21,6 @@ For implementing Bagging Regressor with a library we used `BaggingRegressor` fro
 
 ### The Metrics:
 
-_The best result is highlighted in the table_
-
 | Estimators | Execution Time | R2 Score |
 | ---------- | -------------- | -------- |
 | 10         | 3579 mcs       | 0.8651   |
@@ -40,8 +38,6 @@ For the Custom Bagging Regressor with we implemented the class `CustomBaggingReg
 <img src="assets\br_cus_results.png">
 
 ### The Metrics:
-
-_The best result is highlighted in the table_
 
 | Estimators | Execution Time | R2 Score |
 | ---------- | -------------- | -------- |
