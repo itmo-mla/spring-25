@@ -1,32 +1,5 @@
 # Lab Work №1
 
-<style>
-    .highlighted_table {
-        text-align: center;
-    
-    }
-    .highlighted_table.element_1 tr:nth-child(1) { 
-        color: black;
-        background: rgb(150, 150, 150); 
-        }
-    .highlighted_table.element_2 tr:nth-child(2) { 
-        color: black;
-        background: rgb(150, 150, 150); 
-        }
-    .highlighted_table.element_3 tr:nth-child(3) { 
-        color: black;
-        background: rgb(150, 150, 150); 
-        }
-    .highlighted_table.element_4 tr:nth-child(4) { 
-        color: black;
-        background: rgb(150, 150, 150); 
-        }
-    .highlighted_table.element_5 tr:nth-child(5) { 
-        color: black;
-        background: rgb(150, 150, 150); 
-        }
-</style>
-
 ## The used dataset:
 
 In this lab The [Laptop Price Dataset](https://www.kaggle.com/datasets/ironwolf437/laptop-price-dataset) was used. This is a dataset that contains data aimed at predicting the price of laptops based on their specifications. The feature **Price (Euro)** was the target feature.
@@ -50,8 +23,6 @@ For implementing Bagging Regressor with a library we used `BaggingRegressor` fro
 
 _The best result is highlighted in the table_
 
-<div class="highlighted_table element_5">
-
 | Estimators | Execution Time | R2 Score |
 | ---------- | -------------- | -------- |
 | 10         | 3579 mcs       | 0.8651   |
@@ -59,8 +30,6 @@ _The best result is highlighted in the table_
 | 30         | 9464 mcs       | 0.8660   |
 | 40         | 12447 mcs      | 0.8653   |
 | 50         | 13173 mcs      | 0.8716   |
-
-</div>
 
 ## Reference Bagging Regressor
 
@@ -74,8 +43,6 @@ For the Custom Bagging Regressor with we implemented the class `CustomBaggingReg
 
 _The best result is highlighted in the table_
 
-<div class="highlighted_table element_4">
-
 | Estimators | Execution Time | R2 Score |
 | ---------- | -------------- | -------- |
 | 10         | 2427 mcs       | 0.8584   |
@@ -83,8 +50,6 @@ _The best result is highlighted in the table_
 | 30         | 7461 mcs       | 0.8504   |
 | 40         | 9890 mcs       | 0.8648   |
 | 50         | 11744 mcs      | 0.8594   |
-
-</div>
 
 ## Conclusions
 
