@@ -21,16 +21,17 @@ class LFM:
         self.user_factors = np.random.rand(self.num_users, self.num_factors)
         self.item_factors = np.random.rand(self.num_items, self.num_factors)
 
-        for index in X.index:
-            user_id = users.loc[index]
-            item_id = items.loc[index]
-            rating = ratings.loc[index]
+        for _ in range(epochs):
+            for index in X.index:
+                user_id = users.loc[index]
+                item_id = items.loc[index]
+                rating = ratings.loc[index]
 
-            prediction = np.dot(self.user_factors[user_id], self.item_factors[item_id])
-            error = rating - prediction
+                prediction = np.dot(self.user_factors[user_id], self.item_factors[item_id])
+                error = rating - prediction
 
-            self.user_factors[user_id] += self.learning_rate * (error * self.item_factors[item_id] - self.regularization * self.user_factors[user_id])
-            self.item_factors[item_id] += self.learning_rate * (error * self.user_factors[user_id] - self.regularization * self.item_factors[item_id])
+                self.user_factors[user_id] += self.learning_rate * (error * self.item_factors[item_id] - self.regularization * self.user_factors[user_id])
+                self.item_factors[item_id] += self.learning_rate * (error * self.user_factors[user_id] - self.regularization * self.item_factors[item_id])
 
     def predict(self, X_test):
         predicted_ratings = []

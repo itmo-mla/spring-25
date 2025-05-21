@@ -11,7 +11,7 @@ if __name__ == "__main__":
     num_factors = 37
     learning_rate = 0.01
     regularization = 0.01
-    epochs = 30
+    epochs = 10
 
     data = read_movies('data/ratings.csv')
     reader = Reader(rating_scale=(1, 5))
