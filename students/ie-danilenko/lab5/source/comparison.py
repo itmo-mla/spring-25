@@ -50,6 +50,6 @@ if __name__ == "__main__":
     mae_my = mae(actual_ratings, predicted_ratings)
     rmse_my = rmse(actual_ratings, predicted_ratings)
 
-    print(f"Surprise RMSE: {rmse_my:.4f}")
-    print(f"Surprise MAE: {mae_my:.4f}")
-    print(f"Surprise Time: {time_my:.4f}")
+    print(f"My RMSE: {rmse_my:.4f}")
+    print(f"My MAE: {mae_my:.4f}")
+    print(f"My Time: {time_my:.4f}")
