@@ -21,13 +21,9 @@ For implementing Bagging Regressor with a library we used `BaggingRegressor` fro
 
 ### The Metrics:
 
-| Estimators | Execution Time | R2 Score |
-| ---------- | -------------- | -------- |
-| 10         | 3579 mcs       | 0.8651   |
-| 20         | 8200 mcs       | 0.8656   |
-| 30         | 9464 mcs       | 0.8660   |
-| 40         | 12447 mcs      | 0.8653   |
-| 50         | 13173 mcs      | 0.8716   |
+_Execution Time_: 148169 mcs
+
+_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8504
 
 ## Reference Bagging Regressor
 
@@ -39,17 +35,13 @@ For the Custom Bagging Regressor with we implemented the class `CustomBaggingReg
 
 ### The Metrics:
 
-| Estimators | Execution Time | R2 Score |
-| ---------- | -------------- | -------- |
-| 10         | 2427 mcs       | 0.8584   |
-| 20         | 4646 mcs       | 0.8569   |
-| 30         | 7461 mcs       | 0.8504   |
-| 40         | 9890 mcs       | 0.8648   |
-| 50         | 11744 mcs      | 0.8594   |
+_Execution Time_: 300052 mcs
+
+_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8441
 
 ## Conclusions
 
-1. We found that the best **_number of estimators_** for the reference implementation was `50` with the **_R2 Score = 0.8716_**.
-2. We found that the best **_number of estimators_** for the custom implementation was `40` with the **_R2 Score = 0.8648_**.
-3. the reference implementation was better than the custom implementation according to the **_R2 Score_**
-4. the custom implementation was faster than the reference implementation according to the **_Execution Time_**
+1. We found that the **_number of estimators = 20_** for the reference implementation had the **_Mean R2 Score = 0.8504_**.
+2. We found that the **_number of estimators = 20_** for the custom implementation had the **_Mean R2 Score = 0.8441_**.
+3. The reference implementation was better than the custom implementation according to the **_Mean R2 Score_**
+4. The reference implementation was faster than the custom implementation according to the **_Execution Time_**
