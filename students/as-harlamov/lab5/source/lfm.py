@@ -11,7 +11,6 @@ class LatentFactorModel:
         self.reg = reg
         self.n_epochs = n_epochs
 
-        # Инициализация матриц
         self.user_factors = np.random.normal(scale=1. / n_factors, size=(n_users, n_factors))
         self.item_factors = np.random.normal(scale=1. / n_factors, size=(n_items, n_factors))
 
