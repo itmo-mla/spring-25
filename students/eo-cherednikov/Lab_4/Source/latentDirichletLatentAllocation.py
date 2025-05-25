@@ -49,7 +49,7 @@ class LDA:
         for d, doc in enumerate(self.documents):
             gamma_d = np.zeros(self.num_topics)
             for n, (w, count) in enumerate(doc):
-                topic_probs = self.gamma[d] * self.phi[:, w]  # shape: (K,)
+                topic_probs = self.gamma[d] * self.phi[:, w]
                 topic_probs /= topic_probs.sum()
                 self.z[d][n] = topic_probs
                 gamma_d += count * topic_probs
