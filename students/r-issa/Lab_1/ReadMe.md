@@ -21,9 +21,9 @@ For implementing Bagging Regressor with a library we used `BaggingRegressor` fro
 
 ### The Metrics:
 
-_Execution Time_: 148169 mcs
+_Execution Time_: 139385 mcs
 
-_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8504
+_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8433
 
 ## Reference Bagging Regressor
 
@@ -35,13 +35,13 @@ For the Custom Bagging Regressor with we implemented the class `CustomBaggingReg
 
 ### The Metrics:
 
-_Execution Time_: 300052 mcs
+_Execution Time_: 541661 mcs
 
-_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8441
+_Mean R2 Score (Cross-Validation with `10` folds)_: 0.8421
 
 ## Conclusions
 
-1. We found that the **_number of estimators = 20_** for the reference implementation had the **_Mean R2 Score = 0.8504_**.
-2. We found that the **_number of estimators = 20_** for the custom implementation had the **_Mean R2 Score = 0.8441_**.
-3. The reference implementation was better than the custom implementation according to the **_Mean R2 Score_**
+1. We found that the **_number of estimators = 20_** for the reference implementation had the **_Mean R2 Score = 0.8433_**.
+2. We found that the **_number of estimators = 20_** for the custom implementation had the **_Mean R2 Score = 0.8421_**.
+3. The reference implementation was almost the same as the custom implementation according to the **_Mean R2 Score_**
 4. The reference implementation was faster than the custom implementation according to the **_Execution Time_**
