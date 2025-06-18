@@ -92,13 +92,11 @@ class LDA:
                     self.n_td[:, d] += self.n_dw[d, w] * p_tdw
 
     def m_step(self) -> None:
-        # Update phi (word probabilities for each topic) with beta regularization
         for t in range(self.n_topics):
             self.phi[t, :] = (self.n_wt[:, t] + self.beta - 1)
             self.phi[t, :] = np.maximum(0, self.phi[t, :])
             self.phi[t, :] /= np.sum(self.phi[t, :])
 
-        # Update theta (topic probabilities for each document) with alpha regularization
         for d in range(self.n_docs):
             self.theta[d, :] = (self.n_td[:, d] + self.alpha - 1)
             self.theta[d, :] = np.maximum(0, self.theta[d, :])
@@ -120,13 +118,10 @@ class LDA:
         converged = False
 
         for iteration in range(self.max_iterations):
-            # Perform E-step
             self.e_step()
 
-            # Perform M-step
             self.m_step()
 
-            # Check convergence
             ll = self.log_likelihood()
             ll_change = abs(ll - prev_ll)
 
@@ -168,15 +163,13 @@ class LDA:
         n_words = 0
         log_prob = 0
 
-        # Create document-term matrix for the test corpus
         n_dw_test = np.zeros((len(corpus), self.vocab_size))
         for d, doc in enumerate(corpus):
             for word_id in doc:
-                if word_id < self.vocab_size:  # Make sure word is in vocabulary
+                if word_id < self.vocab_size:
                     n_dw_test[d, word_id] += 1
                     n_words += 1
 
-        # Calculate probability of each word in each document
         for d, doc in enumerate(corpus):
             doc_theta = np.ones(self.n_topics) * self.alpha
             for _ in range(5):
@@ -239,8 +232,6 @@ class LDAComparison:
             random_state=random_state
         )
 
-        # For sklearn's LDA, we need to convert the parameters to match
-        # sklearn uses document_topic_prior (alpha) and topic_word_prior (beta)
         self.sklearn_lda = LatentDirichletAllocation(
             n_components=n_topics,
             doc_topic_prior=alpha,
@@ -250,20 +241,17 @@ class LDAComparison:
         )
 
     def preprocess_documents(self, documents):
-        # First, preprocess with custom tokenizer to get the tokenized corpus
         corpus, word_to_id, id_to_word = self.custom_lda.preprocess_text(documents)
 
-        # Create preprocessed documents as strings for sklearn
         preprocessed_docs = []
         for doc in documents:
             doc = doc.lower()
             doc = re.sub(r'[^\w\s]', '', doc)
             preprocessed_docs.append(doc)
 
-        # Create a vectorizer with the same tokenization pattern
         vectorizer = CountVectorizer(
             lowercase=True,
-            token_pattern=r'\b\w+\b',  # Simple word tokenization like in custom preprocessing
+            token_pattern=r'\b\w+\b', 
         )
 
         return preprocessed_docs, corpus, word_to_id, id_to_word, vectorizer
@@ -272,29 +260,24 @@ class LDAComparison:
 
         results = {}
 
-        # Preprocess documents
         preprocessed_docs, corpus, word_to_id, id_to_word, vectorizer = self.preprocess_documents(documents)
         vocab_size = len(word_to_id)
 
-        # Create document-term matrix for sklearn
         X = vectorizer.fit_transform(preprocessed_docs)
         feature_names = vectorizer.get_feature_names_out()
 
-        # Train custom LDA
         custom_start_time = time.time()
         self.custom_lda.fit(corpus, vocab_size)
         custom_time = time.time() - custom_start_time
         results['custom_time'] = custom_time
         results['custom_perplexity'] = self.custom_lda.perplexity(corpus)
 
-        # Train sklearn LDA
         sklearn_start_time = time.time()
         self.sklearn_lda.fit(X)
         sklearn_time = time.time() - sklearn_start_time
         results['sklearn_time'] = sklearn_time
         results['sklearn_perplexity'] = self.sklearn_lda.perplexity(X)
 
-        # Get top words for each topic (for quality comparison)
         custom_topics = self.custom_lda.get_topic_words(id_to_word)
 
         sklearn_topics = []
@@ -306,31 +289,25 @@ class LDAComparison:
         results['custom_topics'] = custom_topics
         results['sklearn_topics'] = sklearn_topics
 
-        # Calculate speedup
         results['speedup'] = custom_time / sklearn_time if sklearn_time > 0 else float('inf')
 
         return results
 
     def compare_topic_coherence(self, custom_topics, sklearn_topics):
-        # This is a simple topic similarity measure
-        # For each custom topic, find the most similar sklearn topic
         max_similarities = []
 
         for custom_topic in custom_topics:
             similarities = []
             for sklearn_topic in sklearn_topics:
-                # Count words in common
                 common_words = set(custom_topic).intersection(set(sklearn_topic))
                 similarity = len(common_words) / len(custom_topic)
                 similarities.append(similarity)
 
             max_similarities.append(max(similarities))
 
-        # Average of best matches
         return sum(max_similarities) / len(max_similarities)
 
     def visualize_comparison(self, results):
-        # 1. Execution time comparison
         plt.figure(figsize=(12, 6))
         plt.subplot(1, 2, 1)
         times = [results['custom_time'], results['sklearn_time']]
@@ -338,7 +315,6 @@ class LDAComparison:
         plt.title('Execution Time Comparison')
         plt.ylabel('Time (seconds)')
 
-        # 2. Perplexity comparison (lower is better)
         plt.subplot(1, 2, 2)
         perplexities = [results['custom_perplexity'], results['sklearn_perplexity']]
         plt.bar(['Custom LDA', 'Sklearn LDA'], perplexities)
@@ -348,7 +324,6 @@ class LDAComparison:
         plt.tight_layout()
         plt.show()
 
-        # 3. Topic similarity visualization
         topic_similarity = self.compare_topic_coherence(
             results['custom_topics'],
             results['sklearn_topics']
@@ -356,7 +331,6 @@ class LDAComparison:
 
         print(f"Topic similarity between models: {topic_similarity:.2f} (higher is better)")
 
-        # 4. Compare top words for each topic
         print("\nTop words comparison:")
         for t in range(self.n_topics):
             print(f"\nTopic {t+1}:")
