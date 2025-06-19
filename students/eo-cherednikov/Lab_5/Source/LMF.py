@@ -5,12 +5,15 @@ RatingTriplet = Tuple[int, int, float]
 
 
 class LatentFactorModel:
-    def __init__(self, n_users: int, n_items: int, n_factors: int = 40):
+    def __init__(self, n_users: int, n_items: int, n_factors: int = 40, n_epochs: int = 15, learning_rate: float = 0.01, reg: float = 0.05):
         self.user_factors = np.random.normal(0, 0.1, (n_users, n_factors))
         self.item_factors = np.random.normal(0, 0.1, (n_items, n_factors))
         self.user_bias = np.zeros(n_users)
         self.item_bias = np.zeros(n_items)
         self.global_bias = 0.0
+        self.n_epochs = n_epochs
+        self.learning_rate = learning_rate
+        self.reg = reg
 
 
     def _predict_single(self, user_idx: int, item_idx: int) -> float:
@@ -40,22 +43,21 @@ class LatentFactorModel:
 
 
     def fit(
-            self, ratings: List[RatingTriplet], learning_rate: float = 0.01, reg: float = 0.05, n_epochs: int = 15
-    ) -> "LatentFactorModel":
+            self, ratings: List[RatingTriplet]) -> "LatentFactorModel":
         self.global_bias = np.mean([r for _, _, r in ratings])
 
-        for epoch in range(n_epochs):
+        for epoch in range(self.n_epochs):
             np.random.shuffle(ratings)
             epoch_loss = 0.0
 
             for user_idx, item_idx, rating in ratings:
                 user_idx, item_idx = int(user_idx), int(item_idx)
-                self._update_factors(user_idx, item_idx, rating, learning_rate, reg)
+                self._update_factors(user_idx, item_idx, rating, self.learning_rate, self.reg)
                 prediction = self._predict_single(user_idx, item_idx)
                 epoch_loss += (rating - prediction) ** 2
 
             rmse = np.sqrt(epoch_loss / len(ratings))
-            print(f"Epoch {epoch + 1}/{n_epochs} | Train RMSE: {rmse:.4f}")
+            print(f"Epoch {epoch + 1}/{self.n_epochs} | Train RMSE: {rmse:.4f}")
 
         return self
 
