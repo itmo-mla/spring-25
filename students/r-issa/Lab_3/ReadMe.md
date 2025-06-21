@@ -20,6 +20,7 @@ We used the **Multinomial Naive Bayes** variant, appropriate for discrete count 
 
 - **Prior**: $( P(C_k) )$
 - **Likelihood**: $( P(w_i | C_k) )$ with Laplace smoothing:
+
   $$
   P(w_i | C_k) = \frac{\text{count}(w_i, C_k) + \alpha}{\sum_j \text{count}(w_j, C_k) + \alpha \cdot V}
   $$
