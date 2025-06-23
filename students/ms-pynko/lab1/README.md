@@ -24,27 +24,28 @@
 ## Результаты
 ```
 === Hand-made Bagging ===
-Accuracy hand method: 0.8148
-Recall   hand method: 0.6116
-Precision hand method: 0.7364
-Time: 0.39 s
+Accuracy hand method: 0.7815
+Recall hand method: 0.5617
+Precession hand method: 0.5626
+0.17833614349365234
 
 === Single Decision Tree ===
-Accuracy: 0.7037
-Recall:   0.6233
-Precision:0.6660
-Time: 0.01 s
+Single tree accuracy: 0.7037
+Single tree recall: 0.6233
+Single tree precession: 0.6660
+0.004000425338745117
 
 === sklearn RandomForest ===
-Accuracy: 0.7778
-Recall:   0.6399
-Precision:0.6708
-Time: 0.37 s
+Sklearn accuracy: 0.7778
+Sklearn recall: 0.6399
+Sklearn precession: 0.6708
+0.11798930168151855
 ```
 
 ---
 
 ## Выводы
-- Собственная реализация бэггинга показала наивысшую точность (≈0.815), но уступает по времени обучению `DecisionTree` и `RandomForest`.  
-- `RandomForestClassifier` даёт почти те же метрики, что и ручной бэггинг, но работает быстрее благодаря оптимизациям C и параллелизму.
+- **Ручной бэггинг** при текущей реализации (с OOB-фильтрацией и клонированием деревьев) показывает точность (≈0.78). 
+- **RandomForest** из sklearn даёт лучшие метрики (≈0.78), сохраняя разумное время обучения.  
+- **DecisionTree** — самый быстрый (0.004 с), но уступает по качеству ансамблям.
 
