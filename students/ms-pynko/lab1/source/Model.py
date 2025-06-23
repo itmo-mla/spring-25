@@ -39,11 +39,11 @@ class BaggingClassifierManual:
                 self.estimators_.append([tree, features])
 
             if len(self.estimators_) < self.n_estimators:
-            good = list(self.estimators_)
-            i = 0
-            while len(self.estimators_) < self.n_estimators
-            self.estimators_.append(good[i % len(good)])
-            i += 1
+                good = list(self.estimators_)
+                i = 0
+                while len(self.estimators_) < self.n_estimators
+                    self.estimators_.append(good[i % len(good)])
+                    i += 1
 
     def predict(self, X):
         # Сбор предсказаний всех деревьев
