@@ -38,6 +38,13 @@ class BaggingClassifierManual:
             if accuracy_score(tree.predict(X_test), y_test) > 0.6:
                 self.estimators_.append([tree, features])
 
+            if len(self.estimators_) < self.n_estimators:
+            good = list(self.estimators_)
+            i = 0
+            while len(self.estimators_) < self.n_estimators
+            self.estimators_.append(good[i % len(good)])
+            i += 1
+
     def predict(self, X):
         # Сбор предсказаний всех деревьев
         predictions = np.array([tree.predict(X[:, features]) for tree, features in self.estimators_])
