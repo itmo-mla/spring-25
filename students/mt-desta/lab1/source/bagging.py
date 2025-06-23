@@ -6,9 +6,10 @@ from sklearn.metrics import r2_score
 
 class BaggingRegressor:
 
-    def __init__(self, n_estimators=10, max_depth = 10):
+    def __init__(self, n_estimators=10, max_depth = 10, threshold = 0.5):
         self.n_estimators = n_estimators
         self.max_depth = max_depth
+        self.threshold = threshold
 
 
     def fit(self, X, y):
@@ -20,7 +21,12 @@ class BaggingRegressor:
             model = DecisionTreeRegressor(max_depth=self.max_depth)
             model.fit(X_train, y_train)
 
-            self.models.append(model)
+            y_pred = model.predict(X_test)
+            r2 = r2_score(y_test, y_pred)
+            
+            if r2 > self.threshold:
+                self.models.append(model)
+
 
     def predict(self, X):
         predictions = np.zeros(len(X))
